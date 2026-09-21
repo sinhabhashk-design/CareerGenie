@@ -1,0 +1,2 @@
+- [Supabase workspace ownership](supabase-workspace-ownership.md) — connector-backed runtime access uses an HTTP-only workspace cookie plus RLS-scoped request headers.
+- [Career workspace authentication](career-workspace-auth.md) — scope every candidate record in the server query and preserve the artifact build environment.

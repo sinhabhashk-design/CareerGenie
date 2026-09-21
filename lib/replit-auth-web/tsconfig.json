@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "jsx": "react-jsx",
+    "lib": ["es2022", "dom"],
+    "moduleResolution": "bundler"
+  },
+  "references": [
+    {
+      "path": "../api-client-react"
+    }
+  ]
+}

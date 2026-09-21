@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "CareerGenie"
+description = "An AI-powered career application and interview preparation workspace that connects a target job, CV analysis, tailored applications, tracking, and role-specific mock interviews in one continuous workflow."
+version = "1.0.0"
+id = "artifacts/career-genie"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19737
+
+[services.development]
+run = "pnpm --filter @workspace/career-genie run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/career-genie", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/career-genie/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19737"
+BASE_PATH = "/"
