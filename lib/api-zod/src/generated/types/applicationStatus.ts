@@ -11,8 +11,8 @@ export type ApplicationStatus = typeof ApplicationStatus[keyof typeof Applicatio
 
 export const ApplicationStatus = {
   saved: 'saved',
-  cv_tailored: 'cv_tailored',
   applied: 'applied',
+  screening: 'screening',
   interview: 'interview',
   offer: 'offer',
   rejected: 'rejected',

@@ -10,6 +10,8 @@ tags:
   - name: health
   - name: dashboard
   - name: applications
+  - name: resumes
+  - name: storage
   - name: recommendations
   - name: interview
   - name: Auth
@@ -151,6 +153,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
+  /resumes:
+    get:
+      operationId: getResumes
+      tags: [resumes]
+      summary: List saved resumes for the current candidate
+      responses:
+        "200":
+          description: Saved resumes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resume"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestResumeUploadUrl
+      tags: [storage]
+      summary: Request a direct upload URL for a resume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlInput"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
   /applications/{applicationId}:
     get:
       operationId: getApplication
@@ -365,12 +399,41 @@ components:
         location: { type: string }
         sourceUrl: { type: ["string", "null"] }
         description: { type: string }
+        resumeId: { type: ["string", "null"] }
+        resumeName: { type: ["string", "null"] }
+        resumeFileUrl: { type: ["string", "null"] }
+        resumeFileType: { type: ["string", "null"] }
+        resumeRawText: { type: ["string", "null"] }
+        resumeParsedData: { type: ["object", "null"], additionalProperties: true }
+    Resume:
+      type: object
+      required: [id, name, fileUrl, fileType, createdAt, isMaster]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        fileUrl: { type: ["string", "null"] }
+        fileType: { type: ["string", "null"] }
+        createdAt: { type: string }
+        isMaster: { type: boolean }
+    UploadUrlInput:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1 }
+        contentType: { type: string, minLength: 1 }
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string }
+        objectPath: { type: string }
     ApplicationUpdate:
       type: object
       properties:
         status:
           type: string
-          enum: [saved, cv_tailored, applied, interview, offer, rejected, withdrawn]
+          enum: [saved, applied, screening, interview, offer, rejected, withdrawn]
     Application:
       type: object
       required: [id, jobTitle, companyName, location, status, matchScore, cvVersion, updatedAt]
@@ -381,7 +444,7 @@ components:
         location: { type: string }
         status:
           type: string
-          enum: [saved, cv_tailored, applied, interview, offer, rejected, withdrawn]
+          enum: [saved, applied, screening, interview, offer, rejected, withdrawn]
         matchScore: { type: integer }
         cvVersion: { type: ["string", "null"] }
         appliedDate: { type: ["string", "null"] }

@@ -35,7 +35,10 @@ import type {
   InterviewSession,
   LogoutSuccess,
   Recommendation,
-  RecommendationUpdate
+  RecommendationUpdate,
+  Resume,
+  UploadUrlInput,
+  UploadUrlResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -783,6 +786,171 @@ export const useCreateApplication = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateApplicationMutationOptions(options));
+    }
+
+export const getGetResumesUrl = () => {
+
+
+
+
+  return `/api/resumes`
+}
+
+/**
+ * @summary List saved resumes for the current candidate
+ */
+export const getResumes = async ( options?: Parameters<typeof customFetch>[1]): Promise<Resume[]> => {
+
+  return customFetch<Resume[]>(getGetResumesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetResumesQueryKey = () => {
+    return [
+    `/api/resumes`
+    ] as const;
+    }
+
+
+export const getGetResumesQueryOptions = <TData = Awaited<ReturnType<typeof getResumes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getResumes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetResumesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getResumes>>> = ({ signal }) => getResumes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getResumes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetResumesQueryResult = NonNullable<Awaited<ReturnType<typeof getResumes>>>
+export type GetResumesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List saved resumes for the current candidate
+ */
+
+export function useGetResumes<TData = Awaited<ReturnType<typeof getResumes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getResumes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetResumesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRequestResumeUploadUrlUrl = () => {
+
+
+
+
+  return `/api/storage/uploads/request-url`
+}
+
+/**
+ * @summary Request a direct upload URL for a resume
+ */
+export const requestResumeUploadUrl = async (uploadUrlInput: UploadUrlInput, options?: Parameters<typeof customFetch>[1]): Promise<UploadUrlResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<UploadUrlResponse>(getRequestResumeUploadUrlUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(uploadUrlInput)
+  }
+);}
+
+
+
+
+
+export const getRequestResumeUploadUrlMutationKey = () => ['requestResumeUploadUrl'] as const;
+
+export const getRequestResumeUploadUrlMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestResumeUploadUrl>>, TError,RequestResumeUploadUrlMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestResumeUploadUrl>>, TError,RequestResumeUploadUrlMutationVariables, TContext> => {
+
+const mutationKey = getRequestResumeUploadUrlMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestResumeUploadUrl>>, RequestResumeUploadUrlMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestResumeUploadUrl(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestResumeUploadUrlMutationResult = NonNullable<Awaited<ReturnType<typeof requestResumeUploadUrl>>>
+    export type RequestResumeUploadUrlMutationBody = BodyType<UploadUrlInput>
+    export type RequestResumeUploadUrlMutationError = ErrorType<unknown>
+    export type RequestResumeUploadUrlMutationVariables = {data: BodyType<UploadUrlInput>}
+
+    /**
+ * @summary Request a direct upload URL for a resume
+ */
+export const useRequestResumeUploadUrl = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestResumeUploadUrl>>, TError,RequestResumeUploadUrlMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestResumeUploadUrl>>,
+        TError,
+        RequestResumeUploadUrlMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRequestResumeUploadUrlMutationOptions(options));
     }
 
 export const getGetApplicationUrl = (applicationId: string,) => {

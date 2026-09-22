@@ -11,8 +11,8 @@ export type ApplicationUpdateStatus = typeof ApplicationUpdateStatus[keyof typeo
 
 export const ApplicationUpdateStatus = {
   saved: 'saved',
-  cv_tailored: 'cv_tailored',
   applied: 'applied',
+  screening: 'screening',
   interview: 'interview',
   offer: 'offer',
   rejected: 'rejected',

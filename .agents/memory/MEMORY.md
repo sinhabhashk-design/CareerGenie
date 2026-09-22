@@ -1,2 +1,5 @@
 - [Supabase workspace ownership](supabase-workspace-ownership.md) — connector-backed runtime access uses an HTTP-only workspace cookie plus RLS-scoped request headers.
 - [Career workspace authentication](career-workspace-auth.md) — scope every candidate record in the server query and preserve the artifact build environment.
+- [GitHub repository sync](github-repository-sync.md) — use the connected GitHub API when the local Git remote cannot authenticate directly.
+- [Object storage sidecar](object-storage-sidecar.md) — the Replit sidecar can sign protected file URLs without a cloud SDK dependency.
+- [Server-side document extraction](server-side-document-extraction.md) — bundled PDF parsing needs its Node canvas runtime dependency available directly to the API package.

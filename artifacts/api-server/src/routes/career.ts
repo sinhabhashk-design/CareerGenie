@@ -15,6 +15,7 @@ import {
   advanceInterview,
   createApplication,
   createInterview,
+  createInterviewQuestion,
   ensureWorkspace,
   getApplication,
   getInterview,
@@ -22,9 +23,24 @@ import {
   listRecommendations,
   updateApplication,
   updateRecommendation,
-  type Recommendation,
+  type RecommendationStatus,
   type Status,
-} from "../lib/career-store";
+} from "../lib/normalized-career-store";
+import {
+  requestResumeDownload,
+  requestResumeUpload,
+} from "../lib/objectStorage";
+import { supabaseList } from "../lib/supabase";
+import { ResumeExtractionError } from "../lib/resume-extraction";
+
+type ResumeListRow = {
+  id: string;
+  name: string;
+  file_url: string | null;
+  file_type: string | null;
+  created_at: string;
+  is_master: boolean;
+};
 
 const questionFor = (applicationId: string, index: number) => {
   const questions = [
@@ -125,6 +141,77 @@ router.get("/applications", async (req, res, next) => {
   }
 });
 
+router.get("/resumes", async (req, res, next) => {
+  try {
+    const resumes = await supabaseList<ResumeListRow>(
+      "resumes",
+      { user_id: `eq.${workspaceKey(req)}`, order: "created_at.desc" },
+      "id,name,file_url,file_type,created_at,is_master",
+      workspaceKey(req),
+    );
+    res.json(
+      resumes.map((resume) => ({
+        id: resume.id,
+        name: resume.name,
+        fileUrl: resume.file_url,
+        fileType: resume.file_type,
+        createdAt: resume.created_at,
+        isMaster: resume.is_master,
+      })),
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/storage/uploads/request-url", async (req, res, next) => {
+  try {
+    const { name, size, contentType } = req.body ?? {};
+    if (
+      typeof name !== "string" ||
+      !name.trim() ||
+      typeof size !== "number" ||
+      !Number.isFinite(size) ||
+      size <= 0 ||
+      size > 10 * 1024 * 1024 ||
+      typeof contentType !== "string" ||
+      !contentType.trim()
+    ) {
+      res.status(400).json({ error: "Missing or invalid file metadata." });
+      return;
+    }
+    res.json(await requestResumeUpload(workspaceKey(req)));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/storage/objects/*path", async (req, res, next) => {
+  try {
+    const raw = req.params.path;
+    const path = `/objects/${Array.isArray(raw) ? raw.join("/") : raw}`;
+    const owner = workspaceKey(req);
+    const matchingResume = await supabaseList<Pick<ResumeListRow, "id">>(
+      "resumes",
+      {
+        user_id: `eq.${owner}`,
+        file_url: `eq.${path}`,
+        limit: "1",
+      },
+      "id",
+      owner,
+    );
+    if (!matchingResume[0]) {
+      res.status(404).json({ error: "Resume not found." });
+      return;
+    }
+    const downloadUrl = await requestResumeDownload(path, owner);
+    res.redirect(302, downloadUrl);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post("/applications", async (req, res, next) => {
   try {
     const parsed = CreateApplicationBody.safeParse(req.body);
@@ -139,6 +226,10 @@ router.post("/applications", async (req, res, next) => {
     }
     res.status(201).json(created);
   } catch (error) {
+    if (error instanceof ResumeExtractionError) {
+      res.status(422).json({ error: error.message, code: error.code });
+      return;
+    }
     next(error);
   }
 });
@@ -219,7 +310,7 @@ router.patch("/recommendations/:recommendationId", async (req, res, next) => {
     const recommendation = await updateRecommendation(
       workspaceKey(req),
       params.data.recommendationId,
-      body.data.status as Recommendation["status"],
+      body.data.status as RecommendationStatus,
     );
     if (!recommendation) {
       res.status(404).json({ error: "Recommendation not found." });
@@ -250,7 +341,13 @@ router.post("/applications/:applicationId/interview", async (req, res, next) => 
       workspaceKey(req),
       parsed.data.applicationId,
     );
-    res.status(201).json({ ...questionFor(parsed.data.applicationId, 0), id });
+    if (!id) {
+      res.status(404).json({ error: "Application not found." });
+      return;
+    }
+    const firstQuestion = questionFor(parsed.data.applicationId, 0);
+    await createInterviewQuestion(workspaceKey(req), id, firstQuestion);
+    res.status(201).json({ ...firstQuestion, id });
   } catch (error) {
     next(error);
   }
@@ -270,21 +367,29 @@ router.post("/interviews/:interviewId/answer", async (req, res, next) => {
       res.status(400).json({ error: "Please start an interview before answering." });
       return;
     }
+    const score = Math.min(96, 74 + Math.min(body.data.answer.length / 20, 18));
+    const strengths = ["You connected your answer to a practical delivery outcome."];
+    const improvements = ["Add one concrete example of monitoring or exception handling."];
     const updated = await advanceInterview(
       key,
       params.data.interviewId,
       session.application_id,
+      body.data.answer,
+      Math.round(score),
+      strengths,
+      improvements,
     );
     if (!updated) {
       res.status(400).json({ error: "This interview session is no longer available." });
       return;
     }
-    const score = Math.min(96, 74 + Math.min(body.data.answer.length / 20, 18));
+    const nextQuestion = questionFor(session.application_id, updated.question_index);
+    await createInterviewQuestion(key, params.data.interviewId, nextQuestion);
     res.json({
       score: Math.round(score),
-      strengths: ["You connected your answer to a practical delivery outcome."],
-      improvements: ["Add one concrete example of monitoring or exception handling."],
-      nextQuestion: questionFor(session.application_id, updated.question_index),
+      strengths,
+      improvements,
+      nextQuestion,
     });
   } catch (error) {
     next(error);

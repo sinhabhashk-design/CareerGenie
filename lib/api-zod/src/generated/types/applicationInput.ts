@@ -5,6 +5,7 @@
  * CareerGenie API
  * OpenAPI spec version: 0.1.0
  */
+import type { ApplicationInputResumeParsedData } from './applicationInputResumeParsedData';
 
 export interface ApplicationInput {
   /** @minLength 1 */
@@ -15,4 +16,16 @@ export interface ApplicationInput {
   /** @nullable */
   sourceUrl?: string | null;
   description?: string;
+  /** @nullable */
+  resumeId?: string | null;
+  /** @nullable */
+  resumeName?: string | null;
+  /** @nullable */
+  resumeFileUrl?: string | null;
+  /** @nullable */
+  resumeFileType?: string | null;
+  /** @nullable */
+  resumeRawText?: string | null;
+  /** @nullable */
+  resumeParsedData?: ApplicationInputResumeParsedData;
 }

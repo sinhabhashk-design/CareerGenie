@@ -120,7 +120,7 @@ export const GetDashboardResponse = zod.object({
   "jobTitle": zod.string(),
   "companyName": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['saved', 'cv_tailored', 'applied', 'interview', 'offer', 'rejected', 'withdrawn']),
+  "status": zod.enum(['saved', 'applied', 'screening', 'interview', 'offer', 'rejected', 'withdrawn']),
   "matchScore": zod.number().int(),
   "cvVersion": zod.string().nullable(),
   "appliedDate": zod.string().nullish(),
@@ -139,7 +139,7 @@ export const GetApplicationsResponseItem = zod.object({
   "jobTitle": zod.string(),
   "companyName": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['saved', 'cv_tailored', 'applied', 'interview', 'offer', 'rejected', 'withdrawn']),
+  "status": zod.enum(['saved', 'applied', 'screening', 'interview', 'offer', 'rejected', 'withdrawn']),
   "matchScore": zod.number().int(),
   "cvVersion": zod.string().nullable(),
   "appliedDate": zod.string().nullish(),
@@ -162,7 +162,13 @@ export const CreateApplicationBody = zod.object({
   "companyName": zod.string().min(1),
   "location": zod.string().optional(),
   "sourceUrl": zod.string().nullish(),
-  "description": zod.string().optional()
+  "description": zod.string().optional(),
+  "resumeId": zod.string().nullish(),
+  "resumeName": zod.string().nullish(),
+  "resumeFileUrl": zod.string().nullish(),
+  "resumeFileType": zod.string().nullish(),
+  "resumeRawText": zod.string().nullish(),
+  "resumeParsedData": zod.record(zod.string(), zod.unknown()).nullish()
 })
 
 export const CreateApplicationResponse = zod.object({
@@ -170,13 +176,47 @@ export const CreateApplicationResponse = zod.object({
   "jobTitle": zod.string(),
   "companyName": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['saved', 'cv_tailored', 'applied', 'interview', 'offer', 'rejected', 'withdrawn']),
+  "status": zod.enum(['saved', 'applied', 'screening', 'interview', 'offer', 'rejected', 'withdrawn']),
   "matchScore": zod.number().int(),
   "cvVersion": zod.string().nullable(),
   "appliedDate": zod.string().nullish(),
   "updatedAt": zod.string(),
   "initials": zod.string().optional(),
   "accent": zod.string().optional()
+})
+
+
+/**
+ * @summary List saved resumes for the current candidate
+ */
+export const GetResumesResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "fileUrl": zod.string().nullable(),
+  "fileType": zod.string().nullable(),
+  "createdAt": zod.string(),
+  "isMaster": zod.boolean()
+})
+export const GetResumesResponse = zod.array(GetResumesResponseItem)
+
+
+/**
+ * @summary Request a direct upload URL for a resume
+ */
+
+
+
+
+
+export const RequestResumeUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().int().min(1),
+  "contentType": zod.string().min(1)
+})
+
+export const RequestResumeUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string()
 })
 
 
@@ -192,7 +232,7 @@ export const GetApplicationResponse = zod.object({
   "jobTitle": zod.string(),
   "companyName": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['saved', 'cv_tailored', 'applied', 'interview', 'offer', 'rejected', 'withdrawn']),
+  "status": zod.enum(['saved', 'applied', 'screening', 'interview', 'offer', 'rejected', 'withdrawn']),
   "matchScore": zod.number().int(),
   "cvVersion": zod.string().nullable(),
   "appliedDate": zod.string().nullish(),
@@ -219,7 +259,7 @@ export const UpdateApplicationParams = zod.object({
 })
 
 export const UpdateApplicationBody = zod.object({
-  "status": zod.enum(['saved', 'cv_tailored', 'applied', 'interview', 'offer', 'rejected', 'withdrawn']).optional()
+  "status": zod.enum(['saved', 'applied', 'screening', 'interview', 'offer', 'rejected', 'withdrawn']).optional()
 })
 
 export const UpdateApplicationResponse = zod.object({
@@ -227,7 +267,7 @@ export const UpdateApplicationResponse = zod.object({
   "jobTitle": zod.string(),
   "companyName": zod.string(),
   "location": zod.string(),
-  "status": zod.enum(['saved', 'cv_tailored', 'applied', 'interview', 'offer', 'rejected', 'withdrawn']),
+  "status": zod.enum(['saved', 'applied', 'screening', 'interview', 'offer', 'rejected', 'withdrawn']),
   "matchScore": zod.number().int(),
   "cvVersion": zod.string().nullable(),
   "appliedDate": zod.string().nullish(),

@@ -69,8 +69,8 @@ export type ApplicationStatus = typeof ApplicationStatus[keyof typeof Applicatio
 
 export const ApplicationStatus = {
   saved: 'saved',
-  cv_tailored: 'cv_tailored',
   applied: 'applied',
+  screening: 'screening',
   interview: 'interview',
   offer: 'offer',
   rejected: 'rejected',
@@ -102,6 +102,11 @@ export interface DashboardSummary {
   recentApplications: Application[];
 }
 
+/**
+ * @nullable
+ */
+export type ApplicationInputResumeParsedData = { [key: string]: unknown } | null;
+
 export interface ApplicationInput {
   /** @minLength 1 */
   jobTitle: string;
@@ -111,6 +116,43 @@ export interface ApplicationInput {
   /** @nullable */
   sourceUrl?: string | null;
   description?: string;
+  /** @nullable */
+  resumeId?: string | null;
+  /** @nullable */
+  resumeName?: string | null;
+  /** @nullable */
+  resumeFileUrl?: string | null;
+  /** @nullable */
+  resumeFileType?: string | null;
+  /** @nullable */
+  resumeRawText?: string | null;
+  /** @nullable */
+  resumeParsedData?: ApplicationInputResumeParsedData;
+}
+
+export interface Resume {
+  id: string;
+  name: string;
+  /** @nullable */
+  fileUrl: string | null;
+  /** @nullable */
+  fileType: string | null;
+  createdAt: string;
+  isMaster: boolean;
+}
+
+export interface UploadUrlInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
 }
 
 export type ApplicationUpdateStatus = typeof ApplicationUpdateStatus[keyof typeof ApplicationUpdateStatus];
@@ -118,8 +160,8 @@ export type ApplicationUpdateStatus = typeof ApplicationUpdateStatus[keyof typeo
 
 export const ApplicationUpdateStatus = {
   saved: 'saved',
-  cv_tailored: 'cv_tailored',
   applied: 'applied',
+  screening: 'screening',
   interview: 'interview',
   offer: 'offer',
   rejected: 'rejected',
